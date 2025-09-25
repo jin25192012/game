@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>벽돌깨기 PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* ... CSS 코드는 이전과 동일 ... */
+        body { margin: 0; overflow: hidden; background: #f0f0f0; }
+        h1 { display: none; }
+        canvas { display: block; background: #eee; }
+        .logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(0, 0, 0, 0.2); font-size: 5vw; font-weight: bold; z-index: 10; pointer-events: none; text-align: center; line-height: 1.3; }
+    </style>
+</head>
+<body>
+
+<div class="logo">비봉고등학교<br>AI게임콘텐츠학과</div>
+<h1>벽돌깨기 게임</h1>
+<canvas id="myCanvas"></canvas>
+
+<audio id="bgm" src="bgm.mp3" loop></audio>
+
+<script>
+    // 1. 기본 설정
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // 오디오 요소 가져오기 및 재생 로직 추가
+    const bgm = document.getElementById("bgm");
+    let isMusicPlaying = false;
+
+    function startMusic() {
+        if (!isMusicPlaying) {
+            bgm.volume = 0.5; // 배경음악 볼륨을 50%로 설정 (선택 사항)
+            bgm.play();
+            isMusicPlaying = true;
+            window.removeEventListener('click', startMusic);
+            window.removeEventListener('touchstart', startMusic);
+        }
+    }
+    window.addEventListener('click', startMusic);
+    window.addEventListener('touchstart', startMusic);
+
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let ballRadius = canvas.width / 80;
+    let x = canvas.width / 2;
+    let y = canvas.height - 30;
+    let dx = canvas.width / 200;
+    let dy = -dx;
+
+    const paddleHeight = 15;
+    const paddleWidth = canvas.width / 6;
+    let paddleX = (canvas.width - paddleWidth) / 2;
+
+    let rightPressed = false;
+    let leftPressed = false;
+
+    const brickRowCount = 4;
+    const brickColumnCount = 7;
+    const brickPadding = canvas.width / 100;
+    const brickOffsetTop = 40;
+    const brickOffsetLeft = canvas.width / 20;
+    const brickWidth = (canvas.width - (brickOffsetLeft * 2) - (brickPadding * (brickColumnCount - 1))) / brickColumnCount;
+    const brickHeight = canvas.height / 25;
+    let score = 0;
+    let lives = 3;
+
+    const bricks = [];
+    for (let c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for (let r = 0; r < brickRowCount; r++) {
+            bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+    }
+
+    window.addEventListener('resize', () => document.location.reload());
+
+    // 2. 이벤트 리스너 설정
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+    document.addEventListener("mousemove", mouseMoveHandler);
+    document.addEventListener("touchmove", touchMoveHandler, { passive: false });
+
+    function keyDownHandler(e) { if (e.key == "Right" || e.key == "ArrowRight") rightPressed = true; else if (e.key == "Left" || e.key == "ArrowLeft") leftPressed = true; }
+    function keyUpHandler(e) { if (e.key == "Right" || e.key == "ArrowRight") rightPressed = false; else if (e.key == "Left" || e.key == "ArrowLeft") leftPressed = false; }
+    function mouseMoveHandler(e) {
+        const relativeX = e.clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth / 2;
+        }
+    }
+    function touchMoveHandler(e) {
+        const relativeX = e.touches[0].clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth / 2;
+            e.preventDefault();
+        }
+    }
+
+    // ... 나머지 그리기 및 로직 함수들은 이전과 동일 ...
+    function drawBall() { ctx.beginPath(); ctx.arc(x, y, ballRadius, 0, Math.PI * 2); ctx.fillStyle = "#0095DD"; ctx.fill(); ctx.closePath(); }
+    function drawPaddle() { ctx.beginPath(); ctx.rect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight); ctx.fillStyle = "#0095DD"; ctx.fill(); ctx.closePath(); }
+    function drawBricks() { for (let c = 0; c < brickColumnCount; c++) { for (let r = 0; r < brickRowCount; r++) { if (bricks[c][r].status == 1) { const brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft; const brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop; bricks[c][r].x = brickX; bricks[c][r].y = brickY; ctx.beginPath(); ctx.rect(brickX, brickY, brickWidth, brickHeight); ctx.fillStyle = "#0095DD"; ctx.fill(); ctx.closePath(); } } } }
+    function drawScore() { ctx.font = "16px Arial"; ctx.fillStyle = "#0095DD"; ctx.fillText("Score: " + score, 8, 20); }
+    function drawLives() { ctx.font = "16px Arial"; ctx.fillStyle = "#0095DD"; ctx.fillText("Lives: " + lives, canvas.width - 65, 20); }
+    function collisionDetection() { for (let c = 0; c < brickColumnCount; c++) { for (let r = 0; r < brickRowCount; r++) { const b = bricks[c][r]; if (b.status == 1) { if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) { dy = -dy; b.status = 0; score++; if (score == brickRowCount * brickColumnCount) { alert("축하합니다! 게임에서 승리했습니다!"); document.location.reload(); } } } } } }
+    function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawBricks(); drawBall(); drawPaddle(); drawScore(); drawLives(); collisionDetection(); if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) { dx = -dx; } if (y + dy < ballRadius) { dy = -dy; } else if (y + dy > canvas.height - ballRadius - 10) { if (x > paddleX && x < paddleX + paddleWidth) { dy = -dy; } else { lives--; if (!lives) { alert("게임 오버!"); document.location.reload(); } else { x = canvas.width / 2; y = canvas.height - 30; dx = canvas.width / 200; dy = -dx; paddleX = (canvas.width - paddleWidth) / 2; } } } if (rightPressed && paddleX < canvas.width - paddleWidth) { paddleX += 7; } else if (leftPressed && paddleX > 0) { paddleX -= 7; } x += dx; y += dy; requestAnimationFrame(draw); }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(registration => { console.log('SW registered: ', registration); }).catch(registrationError => { console.log('SW registration failed: ', registrationError); }); }); }
+    draw();
+</script>
+
+</body>
+</html>
