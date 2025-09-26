@@ -118,7 +118,7 @@
     let ballRadius = canvas.width / 70; // 공 크기 키움
     let x = canvas.width / 2;
     let y = canvas.height - 30;
-    let dx = canvas.width / 200;
+    let dx = canvas.width / 150;
     let dy = -dx;
 
     const paddleHeight = 15;
@@ -160,7 +160,7 @@
     function resetBallAndPaddle() {
         x = canvas.width / 2;
         y = canvas.height - 30;
-        dx = canvas.width / 200;
+        dx = canvas.width / 150;
         dy = -dx;
         paddleX = (canvas.width - paddleWidth) / 2;
     }
@@ -220,4 +220,5 @@
 </script>
 
 </body>
+
 </html>
