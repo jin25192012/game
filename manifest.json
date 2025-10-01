@@ -1,9 +1,0 @@
-{
-  "short_name": "벽돌깨기",
-  "name": "간단한 벽돌깨기 게임",
-  "start_url": ".",
-  "display": "fullscreen",
-  "orientation": "landscape",
-  "background_color": "#f0f0f0",
-  "theme_color": "#0095DD"
-}
