@@ -1,10 +1,10 @@
 // 캐시 이름과 캐싱할 파일 목록 정의
 const CACHE_NAME = 'brick-breaker-cache-v1';
 const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/bgm.mp3'
+  './',
+  './index.html',
+  './manifest.json',
+  './bgm.mp3'
 ];
 
 // 서비스 워커 설치 이벤트: 파일을 캐시에 저장합니다.
@@ -38,3 +38,4 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
