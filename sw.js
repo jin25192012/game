@@ -22,7 +22,6 @@ self.addEventListener('install', event => {
 });
 
 // 서비스 워커 활성화 이벤트: 이전 버전의 캐시를 정리할 수 있습니다. (지금은 비워둠)
-navigator.serviceWorker.register('./sw.js')
 self.addEventListener('activate', event => {
   console.log('Service worker activating...');
 });
@@ -39,5 +38,6 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
 
 
